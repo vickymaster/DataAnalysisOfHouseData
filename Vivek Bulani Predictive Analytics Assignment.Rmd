@@ -1,0 +1,717 @@
+---
+title: "21205992 Predictive Analytics Assignment1 Solution"
+author: "Vivek Bulani 21205992"
+date: "11/1/2021"
+output: html_document
+---
+<style type="text/css">
+  body{
+  font-family: Times New Roman;
+  font-size: 12pt;
+}
+</style>
+
+
+## Explotory Data Analysis
+
+Q1]
+
+```{r}
+df=read.csv("/Users/vivekbulani/Documents/UCD Sem 1 Modules/UCD Predictive Analytics/data_data_set.csv")
+summary(df)                               #returns statistical summary for all columns
+```
+
+```{r}
+str(df)                                   #returns datatype of each column along with values
+```
+
+
+Hence Price, bathroom and bedroom are numeric variables. Whereas Area and property type are categorical variables.
+Hence we need to convert Area and property type into factors using as.factor()
+
+
+
+```{r}
+dim(df)                                   #returns number of rows and columns in dataset
+```
+
+```{r}
+colnames(df)                              #returns names of all columns
+```
+
+
+```{r}
+df$Area=as.factor(df$Area)                #converts non numeric Area column into factors having 7 levels
+summary(df)
+```
+
+```{r}
+str(df)
+```
+
+```{r}
+df$property.type=as.factor(df$property.type)
+#converts non numeric Property_type column into factors having 4 levels
+
+summary(df)
+```
+
+```{r}
+str(df)
+```
+
+Now categorical variables are converted to factors.
+
+
+
+############################################################################################
+
+Q2]
+
+```{r}
+df[rowSums(is.na(df))>0,]
+
+#prints rows having at least 1 NA. But in my data set, there are no NA values
+```
+
+```{r}
+print(paste("The number of rows having missing values are",nrow(df[rowSums(is.na(df))>0,])))           
+
+#return the number of rows having missing values in the data set.
+```
+
+```{r}
+df=df[!rowSums(is.na(df))>0,]
+```
+
+```{r}
+dim(df)
+
+#As there are no NA values, hence number of rows remains same as before.
+```
+
+
+
+############################################################################################
+
+Q3]
+
+```{r}
+#df[duplicated(df),]                      #prints rows having duplicate values
+```
+
+```{r}
+print(paste("The number of duplicate rows in the dataset is",nrow(df[duplicated(df),])))
+```
+
+```{r}
+print(paste("The total number of rows in the dataset before removing duplicate rows is",nrow(df)))
+```
+
+```{r}
+df=df[!duplicated(df),]                   #removes all duplicate rows
+```
+
+```{r}
+print(paste("The total number of rows left in the dataset after removing duplicate rows is",nrow(df)))
+```
+
+
+############################################################################################
+
+Q4]
+
+1) There might be some situations when the range of data is very large and it becomes difficult to handle such data. as an example suppose some variables has values ranging from -10000000 to +10000000. Analyzing and visualizing such a variable would be very complex. In such situation it would be useful to transform it into a new range which is easy to handle.
+
+2) Sometimes the distribution of a numeric variable can be very complex or it might have distribution which we are not familiar of and have no idea about its statistical formulas. Hence performing statistical analysis on such distribution could be very challenging and complex. In such case, it would be better if we transform this numeric variable into a new range such that its distribution becomes easy and familiar.
+
+3) Also it is a usual case that variables that are having different scales/ranges may contribute differently to the model. Hence in such cases it might be necessary to transform some numeric columns into desired range for proper model building.
+
+
+Examples of Data Transformations :-
+
+a) Log Transform :-
+
+1) Normal distribution is one of the most popular distribution and easy to work with. Suppose some distribution is not following the bell curve structure. Instead it is either a left or right skewed data. Working with such data would be very difficult. 
+2) In such case, we can perform log operation on the data such that the final distribution almost follows a bell curve.
+3) But one of the requirement to apply this transformation is that original data should follow log-normal distribution. Otherwise the result would not be helpful.
+
+
+b) Min-Max Transform :-
+
+1) In his method, we usually scale the original data such that it has new minimum as 0 and new maximum as 1. By doing so, it becomes a lot easier for handling multiple such variables and results in a good model building.
+2) By scaling the data to a range of [0,1], it also helps to develop more informative and clean visualizations which can further help in analysis.
+3) It should be noted that this method is sensitive to outliers.
+
+
+
+############################################################################################
+
+Q5]
+
+1) Consider the example of Age variable. For reporting purposes, it is always beneficial that we convert this continuous data into discrete values/categories (such as less than 20, 20-50, 50-80, more than 80).
+2) This would help us to group data and identify characteristics of each group and accordingly draw conclusions.
+3) Also for such categories, we can then use plots such as histograms, bar plots, etc for clear understanding and better explanation.
+3) Hence, in general, for reporting purposes, it is always beneficial to have discrete data rather than continuous data.
+
+
+############################################################################################
+
+Q6]
+
+```{r}
+df_House1=df$Price[df$property.type=="House"]             #create a new data frame of Price column for just Houses.
+df_House2=df$Area[df$property.type=="House"]              #create a new data frame of Area column for just Houses.
+
+by(df_House1,df_House2,summary)
+```
+
+
+1) Mean is the value which can represent the entire data values. Hence in some cases, when there are missing values, we replace them by the mean because mean is the best representation of data.
+2) Median is the value which divides the data approximately into 2 halves, that is it divides the data into 50% each.
+3) 1st Quartile indicates that 25% of data lies below it when data is sorted in increasing order.
+4) 3rd Quartile indicates that 75% of data lies below it when data is sorted in increasing order.
+
+1) From above summary, we can infer that Prices are relatively high in South Co. Dublin and Dublin City Centre. 
+2) Whereas the Price of houses is cheaper in Co. Dublin and West Co. Dublin.
+3) Also we can see that there is no any information about houses in Co. Dublin.
+4) Mean of Prices of houses in almost areas lies roughly between 2000 and 3000.
+
+
+############################################################################################
+
+Q7]
+```{r}
+boxplot(df_House1~df_House2 , xlab="Area" , ylab="Price" , main="Price of Houses vs Area", cex.axis=0.5)
+```
+1) From the histogram we can see that no information is there about houses in Co. Dublin.
+2) Almost for all areas, median of Prices lies roughly between 2000 and 3000.
+3) There are relatively many outliers (points outside whiskers) for Dublin City Centre, South Co. Dublin and South Dublin City. These outliers should be removed for better and accurate analysis.
+4) There are many houses in Dublin City Centre, South Co. Dublin and South Dublin City as compared to other areas.
+
+
+
+```{r}
+hist(df_House1[df$Area=="South Dublin City"], main = "Histogram of Prices of Houses in South Dublin City", xlab = "Prices")               #histogram of prices of houses in South Dublin City
+```
+
+```{r}
+hist(df_House1[df$Area=="Dublin City Centre"], main = "Histogram of Prices of Houses in Dublin City Centre", xlab = "Prices")               #histogram of prices of houses in Dublin City Centre
+```
+Similarly we can draw histograms for all Areas.
+
+
+
+
+############################################################################################
+
+Q8]
+
+1) A histogram can present data to a user which is misleading. For example, if we use too many bins/blocks, it makes the analysis difficult, whereas if we use too few bins/blocks, it can leave out important information. 
+2) As we change the bin size/width, the histograms change drastically, that is the y-values change a lot. Hence it becomes difficult to present proper and accurate histogram to the end user/client.
+3) Different people can come up with different histograms based on bin size/widths. This may lead to confusion and finally hamper statistical analysis.
+4) Histograms are useful only when there are two variables under observation. If there are more variables to be considered simultaneously then histograms cannot be used.
+5) Histograms break the data into bins. This may lead to loss of meaningful information.
+
+
+############################################################################################
+
+Q9]
+
+```{r}
+boxplot(df$bathroom, main="Boxplot for Bathroom Column", ylab = "Number of Bathrooms")
+```
+
+1) Here the bottom most line is the lower whisker, which is at around 0 in above plot.
+2) Then comes the 1st quartile (the lower boundary of box) which is here at around 1. There are roughly 25% values between lower whisker and 1st quartile.
+3) Then the dark line in the middle of the box is called the median. It indicates that 50% values lie under it when data is sorted in increasing order. Here the median is roughly at 2.
+4) Then the upper boundary of box is called 3rd quartile. Here it is roughly at 3. It indicates that 75% values lie under it. Hence total 50% values lie between 1st quartile and 3rd quartile.
+5) Then comes the upper line, called upper whisker, which is at 6.
+6) Points below the lower whisker and above the upper whisker are called outliers and need to be removed for proper and accurate data analysis.
+
+
+
+############################################################################################
+
+Q10]
+
+```{r}
+xtest = seq(-5,5,length=50)
+ytest = dnorm(xtest,0,1)
+boxplot(xtest,ytest,horizontal=TRUE, main = "Boxplot for a normal distribution")                 #Plot the boxplot
+plot(xtest,ytest,main = "Probability density curve for a normal distribution")                                    #Plot the probability density curve
+```
+
+1) After comparing the 2 graphs, we see that 1st quartile is at approximately -2.25. At around the same value, the probability density curve goes to zero on left hand side.
+2) Similarly, the 3rd quartile is at approximately +2.25. At around the same value, the probability density curve goes to zero on right hand side.
+3) Hence we can say that 50% values lie between 1st quartile and 3rd quartile.
+4) The lower whisker is roughly at around -5 and upper whisker is approximately around +5.
+5) 25% values lie between 1st quartile and lower whisker, and 25% values lie between 3rd quartile and upper whisker.
+6) Also we can say that for a normal distribution, the probability density curve as well as box plot are symmetric.
+
+
+
+############################################################################################
+
+Q11]
+
+```{r}
+table(df$Area)                                    #Frequencies based on different Areas.
+```
+
+```{r}
+barplot(table(df$Area),xlab = "Area", ylab = "Frequency", main = "Frequency Bar Plot of Area", col = rainbow(7), xaxt='n')
+legend("topleft", legend=rownames(table(df$Area)), fill = rainbow(7),cex=0.7)
+```
+
+Here we can see that there are highest number of rows for South Dublin City, followed by North Dublin City and Dublin City Centre.
+Least/Negligible data is present for Co. Dublin.
+
+
+```{r}
+prop.table(table(df$Area))                    #Proportion of data based on different Areas.
+```
+
+```{r}
+barplot(prop.table(table(df$Area)) , xlab = "Area" , ylab = "Proportion", main = "Proportion Bar Plot of Area" , col = rainbow(7), xaxt='n')
+legend("topleft", legend=rownames(table(df$Area)), fill = rainbow(7),cex=0.7)
+```
+Proportion scales the frequency values between 0 and 1 for better comparison.
+We can relatively compare using proportion values.
+From above graph, we can see that approximately more than 30% data is for South Dublin City.
+
+
+
+
+############################################################################################
+
+Q12]
+
+```{r}
+table(df$property.type)                                #Frequencies based on different Property Types
+```
+
+```{r}
+barplot(table(df$property.type),xlab = "Property Type", ylab = "Frequency", main = "Frequency Bar Plot of Property Type", col = rainbow(4))
+```
+Here we can see that in the data, most of the property are of type Apartment.
+There are only a few Flats and Studio type of property.
+
+
+```{r}
+prop.table(table(df$property.type))                    #Proportion of data based on different Property Types
+```
+
+```{r}
+barplot(prop.table(table(df$property.type)),xlab = "Property Type", ylab = "Proportion", main = "Proportion Bar Plot of Property Type", col = rainbow(4))
+```
+From above graph, we can infer that approximately 60% data is for Apartment type of property, followed by 30% of House type of property.
+Flat and Studio together combine to form 10% of data.
+
+
+
+############################################################################################
+
+Q13]
+
+```{r}
+df1=df[df$Area=="Dublin City Centre" & df$property.type=="Apartment" , ]
+plot(df1$bedroom,df1$Price,main = "Scatter Plot for Price vs Bedroom for Apartments in Dublin City Centre", xlab = "Number of Bedrooms", ylab = "Price")
+```
+
+From the plot, we can see that as number of bedrooms increases, price also increases. Hence there is a significant positive correlation between the 2 variables.
+
+
+```{r}
+cor_value=cor(df1$bedroom,df1$Price)
+print(paste("The correlation value between Price and number of Bedrooms for Apartments in Dublin City Centre is",cor_value))
+```
+
+As the correlation value is approximately near to 0.5, it means there is significant correlation between the Price and bedroom variables.
+
+
+
+############################################################################################
+
+Q14]
+
+```{r}
+df2=df[df$Area=="Dublin City Centre", ]                 #data for Dublin City Centre Area.
+#df2
+```
+
+```{r}
+coplot(Price~bedroom | property.type , data=df2)
+```
+
+Above is the conditioning plot between Price and number of bedrooms for different types of property in Dublin City Centre.
+Here we see that for Apartments, as bedrooms increases, the price also increases a litte. For rest of the property types, there is not much data available.
+
+
+
+##########################################################################################################################################################################################################################################################################################################################################################################################
+
+## Simple Linear Regression
+
+
+Q1]
+
+```{r}
+linear_model=lm(df1$Price ~ df1$bedroom)
+print(linear_model)
+```
+
+```{r}
+with(df1,plot(bedroom, Price))
+abline(linear_model)
+```
+
+
+############################################################################################
+
+Q2]
+
+```{r}
+estimated_beta0=summary(linear_model)$coefficients[1,1]
+estimated_beta1=summary(linear_model)$coefficients[2,1]
+print(paste("Price =",estimated_beta0,"+ Bedroom *",estimated_beta1))
+```
+
+Here the Y variable is Price, X variable is Bedroom, beta0 (also called intercept) is 1318.814 and beta1 (also called slope of the line) is 665.305.
+Intercept means when X value is 0, the line cuts the Y axis at point 1318.814.
+Slope indicates that if X value increases by 1, the Y value increases by a factor of 665.305.
+
+
+
+
+############################################################################################
+
+Q3]
+
+1) The main aim of fitting the model/line is that we want to find a line that minimizes the error values, that is it minimizes the vertical distance between the line and the observed points on the scatter plot.
+2) This can be done by taking adding absolute values of errors and then minimizing it. This method is called least-absolute-value (LAV) regression.
+3) But in mathematics, absolute values are pretty difficult to work with.
+4) Hence we need a different method to make all the errors positive. This can be done by squaring all the error values and if needed, take a square root at the end. This method is called least-squares regression.
+5) So we want to find the regression line that minimizes the sum of the areas of these error squares.
+
+6) Using absolute values yields a regression line that is more robust than what we get from least squares method. But it is not efficient.
+7) The advantages of least squares method are:
+a) It is easy to find the best-fitting regression line
+b) It is much easier to work with mathematically
+c) It is easy to minimize the error
+d) We are sure that we will find only one best fitting line unlike absolute valueswhere we may find more than one best fit lines
+
+7) Note that least squares regression is much sensitive to outliers.
+
+
+
+############################################################################################
+
+Q4]
+
+There are four assumptions associated with a linear regression model:
+
+1) Linearity: The relationship between X and Y is linear.
+
+2) Homoscedasticity: The variance of residual is the same for any value of X i.e it does not depend on X value. Mathematically, Var(ei) = sigma^2 for all i
+
+3) Independence: Observations are independent of each other. In other words, Yi or ei values are not correlated with each other i.e Cov(ei,ej)=0, for i!=j
+
+4) Normality of residuals. The residual errors are assumed to be normally distributed.
+
+5) Zero conditional mean :- The error term conditioned on the independent variable should average to 0. In other words, error term is unrelated to independent variables.
+
+############################################################################################
+
+Q5]
+
+```{r}
+#Check for linearity of the data
+plot(linear_model,1)
+```
+Ideally, the residual plot should show no fitted pattern. That is, the red line should be approximately horizontal at zero, which is satisfied in our case. If there is any presence of a pattern then red line may follow some pattern.
+
+
+
+```{r}
+#Check for Homogeneity of variance
+plot(linear_model,3)
+```
+Ideally, we should get see a horizontal line with equally spread points. This is also satisfied in our case.
+
+
+```{r}
+#Check for Normality of residuals
+plot(linear_model,2)
+```
+The QQ plot of residuals can be used to visually check the normality assumption. Ideally, the plot should approximately follow a straight line.
+But in our case, at the higher end, it gets a little deviated from the line.
+
+
+
+############################################################################################
+
+Q6]
+
+1) If the model is not linear, then our model would be biased and hence make poor predictions on unseen data.
+2) If there exists collinearity between variables then as we change one variable, it also changes other variable. Also these 2 variables add up their effect twice, which is not good.
+3) If any error term is correlated with one of the independent variables then it causes variable bias.
+
+
+
+############################################################################################
+
+Q7]
+
+```{r}
+X <- df1$bedroom
+Y <- df1$Price
+
+SXY = sum(X*Y) - length(X)*mean(X)*mean(Y)
+SXY
+
+SXX = sum(X^2) - length(X)*mean(X)^2
+SXX
+
+beta1_hat = SXY/SXX
+print(paste("Beta 1 :-",beta1_hat))
+
+beta0_hat = mean(Y) - beta1_hat*mean(X)
+print(paste("Beta 0 :-",beta0_hat))
+```
+
+Hence if X is 0, y is 1318.8138.
+
+
+############################################################################################
+
+Q8]
+
+```{r}
+beta1_hat = SXY/SXX
+print(paste("Beta 1 :-",beta1_hat))
+```
+
+Hence change in X by 1 unit causes change in Y by 665.305.
+
+
+
+
+############################################################################################
+
+Q9]
+
+beta1_hat = SXY/SXX
+SXY is sample covariance between X and Y, SXX is sample variance of X
+
+SXY = RXY * SX * SY
+RXY is sample correlation coefficient between x and y, SX is sample standard deviation of X, SY is sample standard deviation of Y
+
+Hence sample correlation coefficient between x and y is directly proportional to estimate of slope(beta1).
+
+############################################################################################
+
+Q10]
+
+```{r}
+Yhat = beta0_hat + beta1_hat*X
+SSE = sum((Y-Yhat)^2)
+SSE
+
+MSE = SSE/(length(Y)-2)
+MSE
+
+Var_slope = MSE/SXX
+print(paste("Variance in estimated slope is",Var_slope))
+
+Var_intercept = MSE*(1/length(Y) + mean(X)^2/SXX)
+print(paste("Variance in estimated intercept is",Var_intercept))
+```
+
+
+############################################################################################
+
+Q11]
+
+```{r}
+SE_slope = sqrt(Var_slope)
+print(paste("Standard error in estimated slope is",SE_slope))
+
+SE_intercept = sqrt(Var_intercept)
+print(paste("Standard error in estimated intercept is",SE_intercept))
+```
+Hence there is quite large standard error in estimated slope and variance.
+
+############################################################################################
+
+Q12]
+
+```{r}
+alpha=0.05
+c(beta0_hat - qt(1-alpha/2,length(Y)-2)*sqrt(Var_intercept),
+  beta0_hat + qt(1-alpha/2,length(Y)-2)*sqrt(Var_intercept))
+```
+Hence beta0 lies between 1014 and 1623.
+
+
+
+############################################################################################
+
+Q13]
+
+```{r}
+alpha=0.05
+c(beta1_hat - qt(1-alpha/2,length(Y)-2)*sqrt(Var_slope),
+  beta1_hat + qt(1-alpha/2,length(Y)-2)*sqrt(Var_slope))
+
+```
+Hence beta1 lies between 460 and 870.
+
+
+
+############################################################################################
+
+Q14]
+
+```{r}
+T = (beta0_hat-0)/SE_intercept
+T
+
+alpha =0.05
+qt(1-alpha/2,  length(Y)-2)
+
+
+pval <- 2*(1-pt(abs(T), length(Y)-2))
+pval
+
+```
+
+As abs(T)>qt , hence reject H0
+
+At the 5% level of significance, the probability that beta0 = 0 is pval
+
+
+
+############################################################################################
+
+Q15]
+
+```{r}
+T = (beta1_hat-0)/SE_slope
+T
+
+alpha =0.05
+qt(1-alpha/2, 3)
+
+pval <- 2*(1-pt(abs(T), length(Y)-2))
+pval
+
+```
+As abs(T)>qt, hence reject H0
+
+At the 5% level of significance, the probability that beta1 = 0 is pval
+
+
+############################################################################################
+
+Q16]
+
+```{r}
+summary(linear_model)
+
+SSR = sum((Yhat - mean(Y))^2)
+SSE = sum((Yhat - Y)^2)
+MSR = SSR/1
+MSE = SSE/(length(Y)-2)
+F = MSR/MSE
+F                                       #Same as that in the table
+
+alpha =0.05
+qf(1-alpha,1,length(Y)-2)
+
+pf(F,1,length(Y)-2,lower.tail=FALSE)
+
+```
+As F > rf , hence reject H0
+
+The probability of the F-distribution taking the value 40.95605 is 1.308469e-09.  As 1.308469e-09<0.05, reject H0
+
+
+
+############################################################################################
+
+Q17]
+
+```{r}
+summary(linear_model)
+
+SSE = sum((Yhat - Y)^2)
+SST = sum((Y - mean(Y))^2)
+R2 = (SST -SSE)/SST
+R2
+#or
+R2 = (SSR)/SST
+R2
+
+
+```
+This R2 is same as adjusted R square in the summary()
+R2=0 means no relationship
+R2=1 implies perfect linear fit
+Higher R2 indicates better model
+
+But in our case, it is very low. Hence our model is not that good.
+
+
+
+############################################################################################
+
+Q18]
+
+```{r}
+summary(residuals(linear_model))
+boxplot(residuals(linear_model), main="Residuals")
+plot(density(residuals(linear_model)),main="Density Plot: Residuals")
+polygon(density(residuals(linear_model)), col="red")
+
+RMSE = sqrt(SSE/(length(Y)-2))
+RMSE
+
+summary(linear_model)
+
+```
+Hence Bedroom predicts Price with about 687 units average error in price.
+
+
+############################################################################################
+
+Q19]
+
+```{r}
+SXX = sum((X - mean(X))^2)
+VAR_Y = MSE*(1/length(Y) + (X-mean(X))^2/SXX)
+cbind(Yhat- qt(1-alpha/2,length(Y)-2)*sqrt( VAR_Y),
+      Yhat + qt(1-alpha/2,length(Y)-2)*sqrt( VAR_Y))
+
+plot(X,Y,main = "Confidence Intervals for Estimated Values of Y")
+lines(X,Yhat,col="blue")
+VAR_Y = MSE*(1/length(X)+(X-mean(X))^2/SXX)
+lines(X,Yhat+qt(1-alpha/2,length(X)-2)*sqrt(VAR_Y),col="red")
+lines(X,Yhat-qt(1-alpha/2,length(X)-2)*sqrt(VAR_Y),col="red")
+```
+The confidence intervals are uniformly distanced over entire range of x. Also it is quite narrow.
+
+
+
+############################################################################################
+
+Q20]
+
+```{r}
+plot(X,Y,main = "Prediction Intervals for Estimated Values of Y")
+lines(X,Yhat,col="blue")
+Var_E = MSE*(1 + 1/length(X) + (X-mean(X))^2/SXX)
+lines(X,Yhat+qt(1-alpha/2,length(X)-2)*sqrt(Var_E),col="red")
+lines(X,Yhat-qt(1-alpha/2,length(X)-2)*sqrt(Var_E),col="red")
+```
+The prediction intervals are uniformly distanced over entire range of x. Also it is quite wide.
